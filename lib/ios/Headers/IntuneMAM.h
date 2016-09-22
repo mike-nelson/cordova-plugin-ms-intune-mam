@@ -10,4 +10,5 @@
 #import "IntuneMAMFileProtectionManager.h"
 #import "IntuneMAMPolicyDelegate.h"
 #import "IntuneMAMPolicyManager.h"
+#import "IntuneMAMAppConfigManager.h"
 #import "IntuneMAMLogger.h"

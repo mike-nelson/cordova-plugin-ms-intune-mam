@@ -4,33 +4,41 @@
 
 #import <Foundation/Foundation.h>
 #import "IntuneMAMAsyncResult.h"
+#import "IntuneMAMDefs.h"
 
-@protocol IntuneMAMPolicyDelegate <NSObject>
-
-typedef enum IntuneMAMIdentitySwitchReason
+typedef NS_ENUM(NSUInteger, IntuneMAMIdentitySwitchReason)
 {
     IntuneMAMIdentitySwitchOpenURL,
     IntuneMAMIdentitySwitchCancelConditionalLaunch
-} IntuneMAMIdentitySwitchReason;
+};
+
+typedef NS_ENUM(NSUInteger, IntuneMAMAddIdentityResult)
+{
+    IntuneMAMAddIdentityResultSuccess,
+    IntuneMAMAddIdentityResultFailed
+};
+
+
+@protocol IntuneMAMPolicyDelegate <NSObject>
 
 @optional
 
 // Called by the Intune SDK to inform the application an identity switch is required.
-// The application should respond with IntuneMAMSwitchIdentitySuccess if the SDK
-// is allowed to switch to the specified identity, otherwise IntuneMAMSwitchIdentityFailed.
+// The application must call the completion handler. IntuneMAMSwitchIdentityResultSuccess should
+// be passed to the completion handler if the SDK is allowed to switch to the specified identity,
+// otherwise IntuneMAMSwitchIdentityResultFailed should be passed in.
 // The SDK will block the operation which required the identity
-// switch until the application sets the result value. This method may also be
+// switch until the application calls the completion handler. This method may also be
 // called in response to a user clicking the 'cancel' button on the PIN or
 // Authentication UI after an application resume.
+// The completion handler can be called on any thread.
 // The application does not have to call setUIPolicyIdentity in response to this call.
-- (void) identitySwitchRequired:(NSString*)identity reason:(IntuneMAMIdentitySwitchReason)reason withAsyncResult:(id<IntuneMAMAsyncResult>)result;
-
+- (void) identitySwitchRequired:(NSString*)identity reason:(IntuneMAMIdentitySwitchReason)reason completionHandler:(void (^)(IntuneMAMSwitchIdentityResult))completionHandler;
 
 // Called by the Intune SDK when the application should wipe data for the
 // specified account user principal name (e.g. user@contoso.com).
 // Returns TRUE if successful, FALSE if the account data could not be completely wiped.
 - (BOOL) wipeDataForAccount:(NSString*)upn;
-
 
 // Called by the Intune SDK when the application needs to restart
 // because policy has been received for the first time.  This method
@@ -40,8 +48,13 @@ typedef enum IntuneMAMIdentitySwitchReason
 - (BOOL) restartApplication;
 
 // Called by the Intune SDK when the application needs to add an user account as the app has been
-// automatically enrolled by the SDK. The result value should be set to
-// IntuneMAMAddIdentitySuccess if the app is able to add the identity, IntuneMAMAddIdentityFailed if otherwise.
-- (void) addIdentity:(NSString*)identity withAsyncResult:(id<IntuneMAMAsyncResult>)result;
+// automatically enrolled by the SDK. The application must call the completion handler passing in
+// IntuneMAMAddIdentityResultSuccess if the app is able to add the identity or IntuneMAMAddIdentityResultFailed otherwise.
+// The completion handler can be called on any thread.
+- (void) addIdentity:(NSString*)identity completionHandler:(void (^)(IntuneMAMAddIdentityResult))completionHandler;
+
+// Deprecated methods
+- (void) identitySwitchRequired:(NSString*)identity reason:(IntuneMAMIdentitySwitchReason)reason withAsyncResult:(id<IntuneMAMAsyncResult>)result  __attribute__((deprecated("Please implement identitySwitchRequired:reason:completionHandler:")));
+- (void) addIdentity:(NSString*)identity withAsyncResult:(id<IntuneMAMAsyncResult>)result __attribute__((deprecated("Please implement addIdentity:completionHandler:")));
 
 @end

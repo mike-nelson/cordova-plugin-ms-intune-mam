@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------------------
 
+var pluginCommon = require('../common.js');
 var fs,
   mam,
   npm,
@@ -63,7 +64,7 @@ var saveProject = function (project) {
 var configureProject = function (project) {
   console.log('Starting Step: Configuring Build Settings');
 
-  var intuneAppPluginPath = '../../Plugins/cordova-plugin-ms-intune-mam';
+  var intuneAppPluginPath = '../../Plugins/' + pluginCommon.getPluginId();
   var adalPluginPath = project.getProjectName() + '/Plugins/cordova-plugin-ms-adal';
 
   var configUUIDList = project.getNativeTargetConfigList();
@@ -82,7 +83,7 @@ var configureProject = function (project) {
     project.addHeaderSearchPath(config, '\"$(inherited)\"');
     project.addHeaderSearchPath(config, '\"' + intuneAppPluginPath + '/lib/ios/Headers\"');
     project.addForceLoadLibrary(config, '\"' + intuneAppPluginPath + '/lib/ios/libIntuneMAM.a\"');
-    project.addForceLoadLibrary(config, '\"' + adalPluginPath + '/ADALiOS.framework/ADALiOS\"');
+    project.addForceLoadLibrary(config, '\"' + adalPluginPath + '/ADAL.framework/ADAL\"');
   }
 
   project.enableKeychainSharing();
@@ -92,66 +93,70 @@ var configureProject = function (project) {
 // context: the cordova context that the hook gives us.
 // returns: a Q promise that resolves after we have completed all steps.
 module.exports = function (context) {
-  // Globally defined so we don't need to pass around the context.
-  Q = context.requireCordovaModule('q');
-  npm = context.requireCordovaModule('npm');
+  if (process.platform === 'darwin') {
+    // Globally defined so we don't need to pass around the context.
+    Q = context.requireCordovaModule('q');
+    npm = context.requireCordovaModule('npm');
 
-  console.log('Running pre-build iOS Intune App SDK configuration steps');
+    console.log('Running pre-build iOS Intune App SDK configuration steps');
 
-  return installDependencies(['plist@1.2.0', 'xcode@0.8.3'])
-    .then(function () {
-      requireLibraries();
-      return loadProject();
-    })
-    .then(function (project) {
-      configureProject(project);
-      return mam.configureIntuneMAM(Q, project).then(function () { return saveProject(project); });
-    });
+    return installDependencies(['plist@1.2.0', 'xcode@0.8.3'])
+      .then(function () {
+        requireLibraries();
+        return loadProject();
+      })
+      .then(function (project) {
+        configureProject(project);
+        return mam.configureIntuneMAM(Q, project).then(function () { return saveProject(project); });
+      });
+  } else {
+    console.warn('Skipping iOS configuration steps on non-Mac environment');
+  }
 };
 
 // SIG // Begin signature block
 // SIG // MIIdpgYJKoZIhvcNAQcCoIIdlzCCHZMCAQExCzAJBgUr
 // SIG // DgMCGgUAMGcGCisGAQQBgjcCAQSgWTBXMDIGCisGAQQB
 // SIG // gjcCAR4wJAIBAQQQEODJBs441BGiowAQS9NQkAIBAAIB
-// SIG // AAIBAAIBAAIBADAhMAkGBSsOAwIaBQAEFPtrrzpPeLnx
-// SIG // 9zDINEhb26zhpbNVoIIYZDCCBMMwggOroAMCAQICEzMA
-// SIG // AACYBFjLfyMJsJ4AAAAAAJgwDQYJKoZIhvcNAQEFBQAw
+// SIG // AAIBAAIBAAIBADAhMAkGBSsOAwIaBQAEFGJd1jmB418Q
+// SIG // FcfZXc+a0zQT823noIIYZDCCBMMwggOroAMCAQICEzMA
+// SIG // AACampsWwoPa1cIAAAAAAJowDQYJKoZIhvcNAQEFBQAw
 // SIG // dzELMAkGA1UEBhMCVVMxEzARBgNVBAgTCldhc2hpbmd0
 // SIG // b24xEDAOBgNVBAcTB1JlZG1vbmQxHjAcBgNVBAoTFU1p
 // SIG // Y3Jvc29mdCBDb3Jwb3JhdGlvbjEhMB8GA1UEAxMYTWlj
 // SIG // cm9zb2Z0IFRpbWUtU3RhbXAgUENBMB4XDTE2MDMzMDE5
-// SIG // MjEyN1oXDTE3MDYzMDE5MjEyN1owgbMxCzAJBgNVBAYT
+// SIG // MjEyOVoXDTE3MDYzMDE5MjEyOVowgbMxCzAJBgNVBAYT
 // SIG // AlVTMRMwEQYDVQQIEwpXYXNoaW5ndG9uMRAwDgYDVQQH
 // SIG // EwdSZWRtb25kMR4wHAYDVQQKExVNaWNyb3NvZnQgQ29y
 // SIG // cG9yYXRpb24xDTALBgNVBAsTBE1PUFIxJzAlBgNVBAsT
-// SIG // Hm5DaXBoZXIgRFNFIEVTTjo3QUZBLUU0MUMtRTE0MjEl
+// SIG // Hm5DaXBoZXIgRFNFIEVTTjpCMUI3LUY2N0YtRkVDMjEl
 // SIG // MCMGA1UEAxMcTWljcm9zb2Z0IFRpbWUtU3RhbXAgU2Vy
 // SIG // dmljZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC
-// SIG // ggEBANY3JagEAe41WQrzrh+YxYsa0UxhbcDB8LNbBGWg
-// SIG // N3IqG1SHViHo3OXwbt13cES38Y7JsqLtyXk2mvJagPdv
-// SIG // atgMmfQN2QX8X/Fak8W7tOsAY+KOIOWArM9Av/NTdhEr
-// SIG // EGW4w8W1ubCsw4YU9J086/NmnqXtXa40+Xb8lPwLxJAs
-// SIG // 2hA1NHWU6tgZujSIn9dRswPjpA9G3WRvruBCUcpUOIo0
-// SIG // rRoF1KQGqW9MtkbZQGL2UqS2M3hRXAP8kV2nAp6A/vof
-// SIG // a+uoXv0nLxn3fyf+YT0QrYLGza97xScwVoFfc1apljr2
-// SIG // QTxqS4Qi4JU4dLLT2v2cWY00v5yiS2uzGSHdd9UCAwEA
-// SIG // AaOCAQkwggEFMB0GA1UdDgQWBBTzwiOf0r0ljb2o9Zwb
-// SIG // 6Ehzu+mTwTAfBgNVHSMEGDAWgBQjNPjZUkZwCu1A+3b7
+// SIG // ggEBAKZGcyHKAK1+KMPlE5szicc4CJIlJq0R/J8UFYJz
+// SIG // YmMl8u5Me1+ZqDys5iCAV+aHEnUP3noHraQ8R7DXhYSg
+// SIG // Tpdd35govgBRMWpxghNHe/vJe/YXSUkkzhe2TXlHhE1j
+// SIG // j+O0JQyknC4q9qi2dcccePDGAKm0jt9MuccG/XAq+I7Q
+// SIG // IR6DgWUMnECilK4qJilajEqeW2FMnFSesDzqkidwXk7j
+// SIG // J2Li4DZKnPXh/Vs33s9dAcsKdcz83tvYtINUy3uDKYZR
+// SIG // ECNHwStxzK+Wzlx8yprFXADBj2rK1JKn2K/rvhWbtKgd
+// SIG // xGuEfFh0sDZkj9KCLPgMuSwKVnof6AmHqQbfHNUCAwEA
+// SIG // AaOCAQkwggEFMB0GA1UdDgQWBBQmmgbvkXTwOgin21sU
+// SIG // 7d0HCiAvCTAfBgNVHSMEGDAWgBQjNPjZUkZwCu1A+3b7
 // SIG // syuwwzWzDzBUBgNVHR8ETTBLMEmgR6BFhkNodHRwOi8v
 // SIG // Y3JsLm1pY3Jvc29mdC5jb20vcGtpL2NybC9wcm9kdWN0
 // SIG // cy9NaWNyb3NvZnRUaW1lU3RhbXBQQ0EuY3JsMFgGCCsG
 // SIG // AQUFBwEBBEwwSjBIBggrBgEFBQcwAoY8aHR0cDovL3d3
 // SIG // dy5taWNyb3NvZnQuY29tL3BraS9jZXJ0cy9NaWNyb3Nv
 // SIG // ZnRUaW1lU3RhbXBQQ0EuY3J0MBMGA1UdJQQMMAoGCCsG
-// SIG // AQUFBwMIMA0GCSqGSIb3DQEBBQUAA4IBAQA/sT1SIRZd
-// SIG // 9FxHt/a5YFKggq9n10faNGi9DoqGqeiwFDFyyuAfvy9n
-// SIG // PgYFd9o6FOrzAoU2gPu1xMO6VwkTfrg/LpeInx63QDhB
-// SIG // KjkwQ+zedtN7tizeuu/1mO9abqz9nszQdcvmAII2sBLe
-// SIG // lY40HEhmfW0z0bUtiT0uQUvOvKWspt+ebtehzMcJoZb9
-// SIG // ZJV+p31TrNQ2CuXGVKzwG5QmRFsxmm/I/XdmSBi0JkxJ
-// SIG // krXbJTqu/b7oxCNJ6g5yQbrFBotvCodx89UCBzOVGYPx
-// SIG // ebFoLdBKGxRh5pOCh9r63hmQK7QiAWpg3OXCCePJ2vRn
-// SIG // wNo6iS1rG7zXMAuPOoOXGrsJMIIGBzCCA++gAwIBAgIK
+// SIG // AQUFBwMIMA0GCSqGSIb3DQEBBQUAA4IBAQCJehwGFIbD
+// SIG // v+5TfA//GKMWAGxUw9KZZvNqxbNTH3/VgV9R8/z6Lqiv
+// SIG // 0Y0RH9q3RKNwAhBNsIT2njVXk4PeJqyb4884skOIK8vl
+// SIG // V0vWUmtcbTARAu+pUZbB4oK/Z6uaECCEFKny/OromIJS
+// SIG // dXwD3txRJK1umXshuqEqLPVjxAE01+WgDEnUCt1uAQux
+// SIG // L2lxU/GPEcPl2w0LfSyUhk1nF3nYKHrloO5UvDdy8ZqL
+// SIG // 1Hc4YFOvg2ScMl6+Vy6dpeZ78el6NHeRHnRMqsdL59xq
+// SIG // 4XlayVog0TOb5ffjo7l67nWYUo/ViOKrtyqsfoqBKRvR
+// SIG // cKkPD7NmpVq1jr1cvPdVvPkQMIIGBzCCA++gAwIBAgIK
 // SIG // YRZoNAAAAAAAHDANBgkqhkiG9w0BAQUFADBfMRMwEQYK
 // SIG // CZImiZPyLGQBGRYDY29tMRkwFwYKCZImiZPyLGQBGRYJ
 // SIG // bWljcm9zb2Z0MS0wKwYDVQQDEyRNaWNyb3NvZnQgUm9v
@@ -311,34 +316,34 @@ module.exports = function (context) {
 // SIG // AhMzAAAAZEeElIbbQRk4AAAAAABkMAkGBSsOAwIaBQCg
 // SIG // gcIwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYK
 // SIG // KwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZI
-// SIG // hvcNAQkEMRYEFChTOZ5GFm5Pd6aebKCd/SzhsBlUMGIG
+// SIG // hvcNAQkEMRYEFBctJBSejqdgFrOSIEAU/37I6wZnMGIG
 // SIG // CisGAQQBgjcCAQwxVDBSoDSAMgBNAGkAYwByAG8AcwBv
 // SIG // AGYAdAAgAEMAbwByAHAAbwByAGEAdABpAG8AbgAgACgA
 // SIG // UgApoRqAGGh0dHA6Ly93d3cubWljcm9zb2Z0LmNvbTAN
-// SIG // BgkqhkiG9w0BAQEFAASCAQAE4zHY6KQTXavtDPSYXFaT
-// SIG // 7nQvN7O1sLb6G2BUL2in61hapt76qk9ssSnEYFclHCTX
-// SIG // H2Ufq6D3IfgxQUy+mfDDHKMRDXLDGnMSDPU6RP/M7G+F
-// SIG // 8PhOVCz0/ucsTfqZJ+FJ2ScRCyjdv5ehwG21XIiqwCC7
-// SIG // QhmbkJqu6giTPOX1C5ZwfUnc7+GOKe+dSZnV7kEQ62c+
-// SIG // 4opw3uSC0hU7TRxdzqrzW+vyMfsOLeprM6w0wu5mYdh/
-// SIG // ozC9UlXxgh8RKkBLGyu00fS6Bsn+ZLb8Q86dDWfwTWHP
-// SIG // iQgqyYeSgr4L7hJR5vU6X/P/EsT2QkPy467YDjRmEjtf
-// SIG // nqwkX1WXJcuCoYICKDCCAiQGCSqGSIb3DQEJBjGCAhUw
+// SIG // BgkqhkiG9w0BAQEFAASCAQAHW3P3/kHWTYK7dQp+kYuM
+// SIG // plJNvKne4gqYI4Ifx+pt8VoRMP7YlbFkN0wYjleIcdbc
+// SIG // ehGLqmOmDgt9xJ6Az96hWP2GvQ1thLVf8rGsv2It53By
+// SIG // bRaKIJlo9cozQh8jx5M2gEA4Cdno2kgUiX+vp42HSnVG
+// SIG // DlRwWeLrCIEIZYQQFwFJelIBcgH87oOX33ozRyZfqH45
+// SIG // RFYtnwYazplQU3lf+PyKFv3C/QyxeA92gzOobQcl1rn4
+// SIG // uEGgHoPw5D3veG7tYr6KkC96TsaMMZF7GB7yypTPXqPP
+// SIG // AuqWF3Iah+n6vam0xEV8thVxwGy6kGTL9IBJqoW1KOFz
+// SIG // y1nss08xnuAaoYICKDCCAiQGCSqGSIb3DQEJBjGCAhUw
 // SIG // ggIRAgEBMIGOMHcxCzAJBgNVBAYTAlVTMRMwEQYDVQQI
 // SIG // EwpXYXNoaW5ndG9uMRAwDgYDVQQHEwdSZWRtb25kMR4w
 // SIG // HAYDVQQKExVNaWNyb3NvZnQgQ29ycG9yYXRpb24xITAf
 // SIG // BgNVBAMTGE1pY3Jvc29mdCBUaW1lLVN0YW1wIFBDQQIT
-// SIG // MwAAAJgEWMt/IwmwngAAAAAAmDAJBgUrDgMCGgUAoF0w
+// SIG // MwAAAJqamxbCg9rVwgAAAAAAmjAJBgUrDgMCGgUAoF0w
 // SIG // GAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG
-// SIG // 9w0BCQUxDxcNMTYwNTA1MjAxOTE2WjAjBgkqhkiG9w0B
-// SIG // CQQxFgQUwoqkPa6PAOv7H49mvysqVXVMyVgwDQYJKoZI
-// SIG // hvcNAQEFBQAEggEASsyevpSM401SabgO2eor9s82meAn
-// SIG // GDv/9Dr34+vtfih3MJBudeO9ASJl31oP++Wk+poYD9RC
-// SIG // pWDurFsaPruY5bSq22LO4VHz7qcoTr+7nHfRF95Bhr43
-// SIG // fFIdCgQlZhYwnKY1cRpDNMg530PDA3yudsnD7b/imB71
-// SIG // 7IfJkXJBoVYt3yjSf5Xlo9AqYIcinZ0QsOjeHJLDzGct
-// SIG // 1IgvkMqNm2V4858g9EDprJSwCAHQB8STXT9+VxJ3SJmq
-// SIG // QZR7eLua9vrsGiXqTUY4t7Dxbsl/Y9s3Vr6haZUD6Gy/
-// SIG // ggZqI8smYrgW/wblPkjWz5N/y7728/H3wSSeBnrplY9/
-// SIG // BNj/jQ==
+// SIG // 9w0BCQUxDxcNMTYwOTIyMjEzMTA4WjAjBgkqhkiG9w0B
+// SIG // CQQxFgQUC6cYDYs1vwg+dwlGc9Xhbq0wnE4wDQYJKoZI
+// SIG // hvcNAQEFBQAEggEAiyKUdgf190c36FzAn8DQr46H4eZt
+// SIG // ofOYOGQ8al5s1X9qgxTkfhzgcCR6Tdt0B7tlBlKHkdh1
+// SIG // sSQz780jAEfyzupl/+dGuL7ZZGF2QeGZgzDkpgqocgoE
+// SIG // I7p4YbF27p2U/m3e180HMJ1rwCbPWgmR6dKCYl45iBlS
+// SIG // xfEspyJgv41wZD5DpR21pnBYukNNxqouBf50KNBNqqNG
+// SIG // uD+5bJpz5Bt3yk+XNpr9QJEtZgtdnPrUjDHrlLmf1U3h
+// SIG // Lp++JP7ecnLQY/iNhQ+1BKXpsDx7t0WSYeC2U8kS0tct
+// SIG // pHx5w4T02qd3WqCTO9zXPv/4sCAuY9eE1lkO2IoxVjKK
+// SIG // YeHOhw==
 // SIG // End signature block

@@ -7,6 +7,7 @@
 #import "IntuneMAMPolicy.h"
 #import "IntuneMAMAsyncResult.h"
 #import "IntuneMAMLogger.h"
+#import "IntuneMAMDefs.h"
 
 // Notification name for Intune application policy change notifications.
 // Applications can register for notifications using the default NSNotificationCenter.
@@ -14,15 +15,6 @@
 // as the object and userInfo will be nil.
 extern NSString* const IntuneMAMPolicyDidChangeNotification;
 
-// Switch identity result codes.
-extern id const IntuneMAMSwitchIdentitySuccess;
-extern id const IntuneMAMSwitchIdentityCanceled;
-extern id const IntuneMAMSwitchIdentityNotAllowed;
-extern id const IntuneMAMSwitchIdentityFailed;
-
-// Add identity result codes
-extern id const IntuneMAMAddIdentitySuccess;
-extern id const IntuneMAMAddIdentityFailed;
 
 @interface IntuneMAMPolicyManager : NSObject
 
@@ -35,25 +27,25 @@ extern id const IntuneMAMAddIdentityFailed;
 //
 // The switch identity call may fail or may be canceled by the user. The application should
 // delay the operation that requires the identity switch until the result has been returned
-// via the IntuneMAMAsyncResult object.
+// via the completion handler. The completion handler is called on the main thread.
 // The possible result codes are:
 //
-// IntuneMAMSwitchIdentitySuccess - The identity change was successful.
-// IntuneMAMSwitchIdentityCanceled - The identity change was canceled by the user.
-// IntuneMAMSwitchIdentityNotAllowed - Switching identities is not currently allowed by the SDK.
+// IntuneMAMSwitchIdentityResultSuccess - The identity change was successful.
+// IntuneMAMSwitchIdentityResultCanceled - The identity change was canceled by the user.
+// IntuneMAMSwitchIdentityResultNotAllowed - Switching identities is not currently allowed by the SDK.
 //      This will be returned if the identity is different from the enrolled user but is from
 //      the same organization. Only a single managed identity is allowed in this release.
 //      This will also be returned if a thread identity is set on the main thread that does not
 //      match the identity passed into this method. If the thread identity on the main thread
 //      is different, it should be cleared before calling this method.
-// IntuneMAMSwitchIdentityFailed - an Unknown error occurred.
+// IntuneMAMSwitchIdentityResultFailed - an Unknown error occurred.
 //
 // This call will not apply file policy on the main thread. To do this, setCurrentThreadIdentity
 // must also be called on the main thread.
 //
 // The empty string may be passed in as the identity to represent 'no user' or an unknown personal account.
 // If nil is passed in, the UI identity will fallback to the process identity.
-- (void) setUIPolicyIdentity:(NSString*)identity withAsyncResult:(id<IntuneMAMAsyncResult>)result;
+- (void) setUIPolicyIdentity:(NSString*)identity completionHandler:(void (^)(IntuneMAMSwitchIdentityResult))completionHandler;
 - (NSString*) getUIPolicyIdentity;
 
 // setCurrentThreadIdentity sets the identity of the current thread which is used to determine what
@@ -99,7 +91,36 @@ extern id const IntuneMAMAddIdentityFailed;
 @property (nonatomic,strong) id<IntuneMAMLogger> logger;
 
 // Indicate if telemetry is opted-in or not.
-@property BOOL telemetryEnabled;
+@property (nonatomic) BOOL telemetryEnabled;
 
+// Specifies which AAD authority URI the SDK should use. This property should be set
+// if the application dynamically determines the AAD authority URI. If the authority
+// URI is static, the ADALAuthority value under the IntuneMAMSettings dictionary should
+// be used instead. This value is persisted across application launches.
+@property (nonatomic,strong) NSString* aadAuthorityUriOverride;
+
+// Uploads Intune logs and diagnostic information into Sara
+-(void) sendDiagnosticInformation:(NSString*) clientID withSessionID:(NSString*) sessionID completionHandler:(void (^)(BOOL))completionHandler;
+
+// Returns a dictionary of diagnostic information
+-(NSDictionary*) getDiagnosticInformation;
+
+@end
+
+
+// Deprecated interfaces
+
+// Switch identity result codes.
+extern id const IntuneMAMSwitchIdentitySuccess;
+extern id const IntuneMAMSwitchIdentityCanceled;
+extern id const IntuneMAMSwitchIdentityNotAllowed;
+extern id const IntuneMAMSwitchIdentityFailed;
+
+// Add identity result codes
+extern id const IntuneMAMAddIdentitySuccess;
+extern id const IntuneMAMAddIdentityFailed;
+
+@interface IntuneMAMPolicyManager (IntuneMAMPolicyManagerDeprecated)
+- (void) setUIPolicyIdentity:(NSString*)identity withAsyncResult:(id<IntuneMAMAsyncResult>)result __attribute__((deprecated("Please use setUIPolicyIdentity:completionHandler:")));
 @end
 

@@ -7,6 +7,9 @@
 var fs = require('fs');
 var PlistHelper = require('./plisthelper.js');
 var plist = require('plist');
+var exec = require('child_process').exec;
+var path = require('path');
+var pluginCommon = require('../common.js');
 var Q;
 
 var getMatchingFileFromList = function (filename, files) {
@@ -31,8 +34,17 @@ var configureEntitlementsAndPlists = function (entitlementMap, files) {
       addIntuneURLSchemes(plistObject);
       addIntuneAppQueriesSchemes(plistObject);
       configureAppGroupKey(plistObject, entitlementObject);
+      setMdmlessSettings(plistObject);
     }
   }
+};
+
+// Sets the appropriate plist values to allow MDM-less MAM to work in the app on startup
+// plist: The plist object
+var setMdmlessSettings = function (plist) {
+  console.log('Starting Step: Setting MDM-less MAM Settings');
+  plist.setMamPolicyRequired(true);
+  plist.setAutoEnrollOnLaunch(true);
 };
 
 // Makes the necessary configuration changes to the entitlements.
@@ -188,6 +200,31 @@ var saveFiles = function (files) {
   }));
 };
 
+// Grants execution access to the Intune MAM Configurator binary
+// returns: a Q promise which will be resolved once the call completes
+var chmodIntuneConfigurator = function () {
+  return Q.nfcall(exec, 'chmod +x plugins/' + pluginCommon.getPluginId() + '/lib/ios/IntuneMAMConfigurator');
+};
+
+// Adds all of the Intune UTI configuration to the app's plist
+// plistPath: The pbxproj
+// returns: a Q promise which will be resolved once the call completes
+var addIntuneUtis = function (project) {
+  console.log('Starting Step: Adding Intune UTI\'s to plists');
+  var configUUIDList = project.getNativeTargetConfigList();
+  var plists = configUUIDList.map(function (config) {
+    config = config['value'];
+    return path.join(__dirname, '../../../../platforms/ios', project.getPlistFileName(config));
+  }).filter(function (value, index, array) {
+    return array.indexOf(value) === index;
+  });
+
+  return Q.all(plists.map(function (plist) {
+    var pathToConfigurator = path.resolve(__dirname, '../../lib/ios/IntuneMAMConfigurator');
+    return Q.nfcall(exec, '\"' + pathToConfigurator + '\" \"' + plist + '\"');
+  }));
+};
+
 // Iterates through the list of all configurations associated with the primary native target of
 // the supplied project and runs the configuration steps for each one.
 // q: a reference to the Q npm library - via require('Q') or cordovaContext.requireCordovaModule('Q')
@@ -203,6 +240,10 @@ module.exports.configureIntuneMAM = function (q, project) {
     .then(function (files) {
       configureEntitlementsAndPlists(fileInfo.entitlementsPlistMapping, files);
       return saveFiles(files);
+    })
+    .then(chmodIntuneConfigurator)
+    .then(function () {
+      return addIntuneUtis(project);
     });
 };
 
@@ -210,45 +251,45 @@ module.exports.configureIntuneMAM = function (q, project) {
 // SIG // MIIdpgYJKoZIhvcNAQcCoIIdlzCCHZMCAQExCzAJBgUr
 // SIG // DgMCGgUAMGcGCisGAQQBgjcCAQSgWTBXMDIGCisGAQQB
 // SIG // gjcCAR4wJAIBAQQQEODJBs441BGiowAQS9NQkAIBAAIB
-// SIG // AAIBAAIBAAIBADAhMAkGBSsOAwIaBQAEFA4TRM8kEBiF
-// SIG // A0AQemX3HRLFy5BtoIIYZDCCBMMwggOroAMCAQICEzMA
-// SIG // AACYBFjLfyMJsJ4AAAAAAJgwDQYJKoZIhvcNAQEFBQAw
+// SIG // AAIBAAIBAAIBADAhMAkGBSsOAwIaBQAEFIK6bjSxFY9y
+// SIG // YiKyLntC3Qa0tlXXoIIYZDCCBMMwggOroAMCAQICEzMA
+// SIG // AACc7v4UValdNVAAAAAAAJwwDQYJKoZIhvcNAQEFBQAw
 // SIG // dzELMAkGA1UEBhMCVVMxEzARBgNVBAgTCldhc2hpbmd0
 // SIG // b24xEDAOBgNVBAcTB1JlZG1vbmQxHjAcBgNVBAoTFU1p
 // SIG // Y3Jvc29mdCBDb3Jwb3JhdGlvbjEhMB8GA1UEAxMYTWlj
 // SIG // cm9zb2Z0IFRpbWUtU3RhbXAgUENBMB4XDTE2MDMzMDE5
-// SIG // MjEyN1oXDTE3MDYzMDE5MjEyN1owgbMxCzAJBgNVBAYT
+// SIG // MjEzMFoXDTE3MDYzMDE5MjEzMFowgbMxCzAJBgNVBAYT
 // SIG // AlVTMRMwEQYDVQQIEwpXYXNoaW5ndG9uMRAwDgYDVQQH
 // SIG // EwdSZWRtb25kMR4wHAYDVQQKExVNaWNyb3NvZnQgQ29y
 // SIG // cG9yYXRpb24xDTALBgNVBAsTBE1PUFIxJzAlBgNVBAsT
-// SIG // Hm5DaXBoZXIgRFNFIEVTTjo3QUZBLUU0MUMtRTE0MjEl
+// SIG // Hm5DaXBoZXIgRFNFIEVTTjo1ODQ3LUY3NjEtNEY3MDEl
 // SIG // MCMGA1UEAxMcTWljcm9zb2Z0IFRpbWUtU3RhbXAgU2Vy
 // SIG // dmljZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC
-// SIG // ggEBANY3JagEAe41WQrzrh+YxYsa0UxhbcDB8LNbBGWg
-// SIG // N3IqG1SHViHo3OXwbt13cES38Y7JsqLtyXk2mvJagPdv
-// SIG // atgMmfQN2QX8X/Fak8W7tOsAY+KOIOWArM9Av/NTdhEr
-// SIG // EGW4w8W1ubCsw4YU9J086/NmnqXtXa40+Xb8lPwLxJAs
-// SIG // 2hA1NHWU6tgZujSIn9dRswPjpA9G3WRvruBCUcpUOIo0
-// SIG // rRoF1KQGqW9MtkbZQGL2UqS2M3hRXAP8kV2nAp6A/vof
-// SIG // a+uoXv0nLxn3fyf+YT0QrYLGza97xScwVoFfc1apljr2
-// SIG // QTxqS4Qi4JU4dLLT2v2cWY00v5yiS2uzGSHdd9UCAwEA
-// SIG // AaOCAQkwggEFMB0GA1UdDgQWBBTzwiOf0r0ljb2o9Zwb
-// SIG // 6Ehzu+mTwTAfBgNVHSMEGDAWgBQjNPjZUkZwCu1A+3b7
+// SIG // ggEBAMwlhsl+iHoEj/vklU9epTLAab6xrU1GWdPtri0X
+// SIG // lXXCMHd2091EB93Uff8GMa0sSf786tMU1N48+M230myS
+// SIG // iD2LhwqTOH+Wtrc7v555A64ftHgB3Tc7LuyveruJiWU7
+// SIG // iGI15VE7d64pXCwmFZs4K9MbvbPBtBKuu76g8rl7jG2p
+// SIG // 8o7lEj/f2zhzZtxVW0XTnLCg2y34ziccn4ieu78n2xHP
+// SIG // emwVbpUZv+hTb1+ewejzeMMwiURNM4oQLKdHRDqDccaW
+// SIG // dOU+iQbhgUshhWzdmlwnrRfbPvS0ezij1zAE4GnvjMtG
+// SIG // xRLA8t7CfM/J1FW7ktvNOThFdvqZVRFYbMQsiYkCAwEA
+// SIG // AaOCAQkwggEFMB0GA1UdDgQWBBQ9XziJKANTiL5XmMZp
+// SIG // /vYFXJZLLjAfBgNVHSMEGDAWgBQjNPjZUkZwCu1A+3b7
 // SIG // syuwwzWzDzBUBgNVHR8ETTBLMEmgR6BFhkNodHRwOi8v
 // SIG // Y3JsLm1pY3Jvc29mdC5jb20vcGtpL2NybC9wcm9kdWN0
 // SIG // cy9NaWNyb3NvZnRUaW1lU3RhbXBQQ0EuY3JsMFgGCCsG
 // SIG // AQUFBwEBBEwwSjBIBggrBgEFBQcwAoY8aHR0cDovL3d3
 // SIG // dy5taWNyb3NvZnQuY29tL3BraS9jZXJ0cy9NaWNyb3Nv
 // SIG // ZnRUaW1lU3RhbXBQQ0EuY3J0MBMGA1UdJQQMMAoGCCsG
-// SIG // AQUFBwMIMA0GCSqGSIb3DQEBBQUAA4IBAQA/sT1SIRZd
-// SIG // 9FxHt/a5YFKggq9n10faNGi9DoqGqeiwFDFyyuAfvy9n
-// SIG // PgYFd9o6FOrzAoU2gPu1xMO6VwkTfrg/LpeInx63QDhB
-// SIG // KjkwQ+zedtN7tizeuu/1mO9abqz9nszQdcvmAII2sBLe
-// SIG // lY40HEhmfW0z0bUtiT0uQUvOvKWspt+ebtehzMcJoZb9
-// SIG // ZJV+p31TrNQ2CuXGVKzwG5QmRFsxmm/I/XdmSBi0JkxJ
-// SIG // krXbJTqu/b7oxCNJ6g5yQbrFBotvCodx89UCBzOVGYPx
-// SIG // ebFoLdBKGxRh5pOCh9r63hmQK7QiAWpg3OXCCePJ2vRn
-// SIG // wNo6iS1rG7zXMAuPOoOXGrsJMIIGBzCCA++gAwIBAgIK
+// SIG // AQUFBwMIMA0GCSqGSIb3DQEBBQUAA4IBAQBW9mryWArT
+// SIG // QwTRt58bLNWamRLKYRBK7V4/jFUv0R3jt027EwgUYa/L
+// SIG // EWspXTacTuw6feQf/Ov68BRuktDg4eLL7sMBFl+oSuK7
+// SIG // 4rT4+rVGDt3ZL4likaHyLofibFnlxCHa9893BvwIQrq8
+// SIG // OOyT+j2l5f7tesai2vrhS7krO3Le7H+DoJM+bvZc9/9K
+// SIG // +WyVFpHqY9wXqNLTBX0rql19kWdzw3WNHzkui86g8mw1
+// SIG // T4ez07TsJEHqKzpEAv/8j5vIJsr+h+Hp19UdUcDPtExi
+// SIG // XXJKoIcLFLYxTLZ2axLwxuFSwOqwzpSNPG8sWnYUGupP
+// SIG // TBbE37m8UOHC2xm7iFh+XejuMIIGBzCCA++gAwIBAgIK
 // SIG // YRZoNAAAAAAAHDANBgkqhkiG9w0BAQUFADBfMRMwEQYK
 // SIG // CZImiZPyLGQBGRYDY29tMRkwFwYKCZImiZPyLGQBGRYJ
 // SIG // bWljcm9zb2Z0MS0wKwYDVQQDEyRNaWNyb3NvZnQgUm9v
@@ -408,34 +449,34 @@ module.exports.configureIntuneMAM = function (q, project) {
 // SIG // AhMzAAAAZEeElIbbQRk4AAAAAABkMAkGBSsOAwIaBQCg
 // SIG // gcIwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYK
 // SIG // KwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZI
-// SIG // hvcNAQkEMRYEFPTLXebDDUHFwQt9lagQY+y0oXY6MGIG
+// SIG // hvcNAQkEMRYEFAUsj/zXkkP3zA7uBUXE3WW22ihVMGIG
 // SIG // CisGAQQBgjcCAQwxVDBSoDSAMgBNAGkAYwByAG8AcwBv
 // SIG // AGYAdAAgAEMAbwByAHAAbwByAGEAdABpAG8AbgAgACgA
 // SIG // UgApoRqAGGh0dHA6Ly93d3cubWljcm9zb2Z0LmNvbTAN
-// SIG // BgkqhkiG9w0BAQEFAASCAQAZ4p3VFbfn18r0QSrwZzQc
-// SIG // aMDfrh+I3AQXhNBYHjeEtR67ZU0aOBUfKag4pA0GhEbA
-// SIG // +aKfT0N/0445uAg2xcVCW6bHVTrBLK7cOw9nXkxkSBUc
-// SIG // TV+14HQPrt/nMpSEVvnUxPmRiBZ0EnfatfgFzf1BHZCQ
-// SIG // I7LkYgW/GaKvqiMP7hiux//xe5Zl/L/Yeze6AVTglSr3
-// SIG // Krx8Uy/5pEG3iUeJ9qSCs5VoTg7mHYcWMUQifMPiLHBx
-// SIG // gz+ogEaDW1pb1qygDw4hBkMqEraB/SmsTLfeTP1ZaN9Z
-// SIG // MDeQIb+TUbngGTUT9xRDegqeIDSHq7dfXidsN5ecNjWg
-// SIG // VcPGgscgJg8+oYICKDCCAiQGCSqGSIb3DQEJBjGCAhUw
+// SIG // BgkqhkiG9w0BAQEFAASCAQA1NMsM52y5RkeRnPX9j53q
+// SIG // VA2keZwIpYRym3xybw+HWbqOu05MADdq3crinx8nrWDG
+// SIG // rdkfzXTWMKeXrAv3ueFssuiwBdMu8pWrZPHMF+HPBBOw
+// SIG // ZXfKJN/DzFsxC71iPlokw5BPcimzC6VazDYSb9HODYGH
+// SIG // ftB3UyvoHg96j5XWC9BEoKfIemJN5yWb+hsOGAtt2PCv
+// SIG // X1W95yKI9sEgleCOZp1mS0HGz3JnU4mzxOuIr+THsniN
+// SIG // ggu4wJj0v5dpyhOj1BYzWSAw4vJlL3B/dJb2N0+nNTP2
+// SIG // zZA6N6APVQu5tmTQWNRFZCXQXw6MwiOwwxr59iocAziC
+// SIG // mnUReDfUtkzWoYICKDCCAiQGCSqGSIb3DQEJBjGCAhUw
 // SIG // ggIRAgEBMIGOMHcxCzAJBgNVBAYTAlVTMRMwEQYDVQQI
 // SIG // EwpXYXNoaW5ndG9uMRAwDgYDVQQHEwdSZWRtb25kMR4w
 // SIG // HAYDVQQKExVNaWNyb3NvZnQgQ29ycG9yYXRpb24xITAf
 // SIG // BgNVBAMTGE1pY3Jvc29mdCBUaW1lLVN0YW1wIFBDQQIT
-// SIG // MwAAAJgEWMt/IwmwngAAAAAAmDAJBgUrDgMCGgUAoF0w
+// SIG // MwAAAJzu/hRVqV01UAAAAAAAnDAJBgUrDgMCGgUAoF0w
 // SIG // GAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG
-// SIG // 9w0BCQUxDxcNMTYwNTA1MjAxOTEzWjAjBgkqhkiG9w0B
-// SIG // CQQxFgQUXzKfzC2D3qP0iIMJBOcvexF15aUwDQYJKoZI
-// SIG // hvcNAQEFBQAEggEAhm3+3vz+INiK7snXwMBm0U75gRcp
-// SIG // SzUXz8sZSpYUzCvZyY1X5JTuqzhhA7bA7e1/oAB2mlFA
-// SIG // yRQq+hgeQgurvTIvU6a538wQbuLLOSRD5ds4nyvgbTlS
-// SIG // u6Ijj0Et2SpS0fF0fWKmCRm+spuDSyTRpqPxlPxGZ4ZX
-// SIG // 5Aqprbd0dAwuCjDxjoRZXTL34K9N6ou7a5FqJbECreWt
-// SIG // COmpndfyr/c5H2jIIjTAddubgEeIvFZSNzG9JkZ4cXRE
-// SIG // MIROLnxUJrDe9qtI2FGvdBw2pHBdEkOFzM076+TqXri/
-// SIG // IqjTq0Fl8iBmYxDL3zXSq5HnUdOx+rPHdycsdnGrQppc
-// SIG // V7FtPg==
+// SIG // 9w0BCQUxDxcNMTYwOTIyMjEzMTA4WjAjBgkqhkiG9w0B
+// SIG // CQQxFgQUj8LNG5qrdpsSzFi0DBuC62UjhOIwDQYJKoZI
+// SIG // hvcNAQEFBQAEggEAe622HoTGKJuPpRlSmS29coyf3kFr
+// SIG // 5VCEVr3+My3U17QtBqrkh27SJa+n+0G/3HTsl3dRdmbC
+// SIG // Inby3zR98RUESw3ufRTxsBj509PrHHjo7DO548umwEVb
+// SIG // IJ2DRRPbnWRxhCPSqQQBlQxi+L/ZK0JG73Ow8ByCbZ7z
+// SIG // Ns2TM6glPrPNn7lzOyZkkc75EOhXAcOujsEij2YoYKhr
+// SIG // fF8PEJKPLeCVpErict05rTlK+uMj3hdqTRvzxu/52+NQ
+// SIG // xJBbxD5Ktx2elqMR4xX4oJHhVw9ByU0pPbzAvJpkMc9m
+// SIG // tonQeUNLvPNQ1Wk7Nz4WtH+Wj8l9+RiU/O315TYUA+yx
+// SIG // p91cZA==
 // SIG // End signature block
