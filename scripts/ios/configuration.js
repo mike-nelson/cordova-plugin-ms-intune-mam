@@ -64,7 +64,7 @@ var saveProject = function (project) {
 var configureProject = function (project) {
   console.log('Starting Step: Configuring Build Settings');
 
-  var intuneAppPluginPath = '../../Plugins/' + pluginCommon.getPluginId();
+  var intuneAppPluginPath = project.getProjectName() + '/Plugins/' + pluginCommon.getPluginId();
   var adalPluginPath = project.getProjectName() + '/Plugins/cordova-plugin-ms-adal';
 
   var configUUIDList = project.getNativeTargetConfigList();
@@ -79,9 +79,7 @@ var configureProject = function (project) {
     config = config['value'];
     project.disableBitcode(config);
     project.addLibrarySearchPath(config, '\"$(inherited)\"');
-    project.addLibrarySearchPath(config, '\"' + intuneAppPluginPath + '/lib/ios\"');
     project.addHeaderSearchPath(config, '\"$(inherited)\"');
-    project.addHeaderSearchPath(config, '\"' + intuneAppPluginPath + '/lib/ios/Headers\"');
     project.addForceLoadLibrary(config, '\"' + intuneAppPluginPath + '/lib/ios/libIntuneMAM.a\"');
     project.addForceLoadLibrary(config, '\"' + adalPluginPath + '/ADAL.framework/ADAL\"');
   }
@@ -118,45 +116,45 @@ module.exports = function (context) {
 // SIG // MIIdpgYJKoZIhvcNAQcCoIIdlzCCHZMCAQExCzAJBgUr
 // SIG // DgMCGgUAMGcGCisGAQQBgjcCAQSgWTBXMDIGCisGAQQB
 // SIG // gjcCAR4wJAIBAQQQEODJBs441BGiowAQS9NQkAIBAAIB
-// SIG // AAIBAAIBAAIBADAhMAkGBSsOAwIaBQAEFGJd1jmB418Q
-// SIG // FcfZXc+a0zQT823noIIYZDCCBMMwggOroAMCAQICEzMA
-// SIG // AACampsWwoPa1cIAAAAAAJowDQYJKoZIhvcNAQEFBQAw
+// SIG // AAIBAAIBAAIBADAhMAkGBSsOAwIaBQAEFNz+0Qv1MjI2
+// SIG // YXYGdjc/Ae4Hj/Z2oIIYZDCCBMMwggOroAMCAQICEzMA
+// SIG // AACu7D+ttou5LdIAAAAAAK4wDQYJKoZIhvcNAQEFBQAw
 // SIG // dzELMAkGA1UEBhMCVVMxEzARBgNVBAgTCldhc2hpbmd0
 // SIG // b24xEDAOBgNVBAcTB1JlZG1vbmQxHjAcBgNVBAoTFU1p
 // SIG // Y3Jvc29mdCBDb3Jwb3JhdGlvbjEhMB8GA1UEAxMYTWlj
-// SIG // cm9zb2Z0IFRpbWUtU3RhbXAgUENBMB4XDTE2MDMzMDE5
-// SIG // MjEyOVoXDTE3MDYzMDE5MjEyOVowgbMxCzAJBgNVBAYT
+// SIG // cm9zb2Z0IFRpbWUtU3RhbXAgUENBMB4XDTE2MDUwMzE3
+// SIG // MTMyNVoXDTE3MDgwMzE3MTMyNVowgbMxCzAJBgNVBAYT
 // SIG // AlVTMRMwEQYDVQQIEwpXYXNoaW5ndG9uMRAwDgYDVQQH
 // SIG // EwdSZWRtb25kMR4wHAYDVQQKExVNaWNyb3NvZnQgQ29y
 // SIG // cG9yYXRpb24xDTALBgNVBAsTBE1PUFIxJzAlBgNVBAsT
-// SIG // Hm5DaXBoZXIgRFNFIEVTTjpCMUI3LUY2N0YtRkVDMjEl
+// SIG // Hm5DaXBoZXIgRFNFIEVTTjpCOEVDLTMwQTQtNzE0NDEl
 // SIG // MCMGA1UEAxMcTWljcm9zb2Z0IFRpbWUtU3RhbXAgU2Vy
 // SIG // dmljZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC
-// SIG // ggEBAKZGcyHKAK1+KMPlE5szicc4CJIlJq0R/J8UFYJz
-// SIG // YmMl8u5Me1+ZqDys5iCAV+aHEnUP3noHraQ8R7DXhYSg
-// SIG // Tpdd35govgBRMWpxghNHe/vJe/YXSUkkzhe2TXlHhE1j
-// SIG // j+O0JQyknC4q9qi2dcccePDGAKm0jt9MuccG/XAq+I7Q
-// SIG // IR6DgWUMnECilK4qJilajEqeW2FMnFSesDzqkidwXk7j
-// SIG // J2Li4DZKnPXh/Vs33s9dAcsKdcz83tvYtINUy3uDKYZR
-// SIG // ECNHwStxzK+Wzlx8yprFXADBj2rK1JKn2K/rvhWbtKgd
-// SIG // xGuEfFh0sDZkj9KCLPgMuSwKVnof6AmHqQbfHNUCAwEA
-// SIG // AaOCAQkwggEFMB0GA1UdDgQWBBQmmgbvkXTwOgin21sU
-// SIG // 7d0HCiAvCTAfBgNVHSMEGDAWgBQjNPjZUkZwCu1A+3b7
+// SIG // ggEBAMU1NKkcd7KmYPBjeGAq6gNQs5mD6fPlPzBu2sR1
+// SIG // z2RnTLzW0Uj5dvW2vPIwmEbrf+qeTo7whjXESDD1ihTK
+// SIG // ilXmPM1KEDaeOo2LF3p5eL0wICdnFAnmhsvb8S2Exrl7
+// SIG // WgoZ/oyKT7kesVEOtGOODNo8qbG3EGWHOjrpMOHKPgiM
+// SIG // PHyqsT3A43ZtXP4Ms1Z4UmE17L/EtDQcJYroTQjROA/G
+// SIG // 9CzY+xMY+c31WBrz+mfibRmOy0/u3GlAk9LiLSpRNA/4
+// SIG // g75WOcy625blG+Fi1AaYJTMO21NAUgHL3DcdF8le/gHX
+// SIG // JoYhUBreKWY21czrF7Nzzlh06uPyl0ZrRhyn7zMCAwEA
+// SIG // AaOCAQkwggEFMB0GA1UdDgQWBBQcOHLSWpK6QYm6QfUy
+// SIG // ZGCbCYBgVDAfBgNVHSMEGDAWgBQjNPjZUkZwCu1A+3b7
 // SIG // syuwwzWzDzBUBgNVHR8ETTBLMEmgR6BFhkNodHRwOi8v
 // SIG // Y3JsLm1pY3Jvc29mdC5jb20vcGtpL2NybC9wcm9kdWN0
 // SIG // cy9NaWNyb3NvZnRUaW1lU3RhbXBQQ0EuY3JsMFgGCCsG
 // SIG // AQUFBwEBBEwwSjBIBggrBgEFBQcwAoY8aHR0cDovL3d3
 // SIG // dy5taWNyb3NvZnQuY29tL3BraS9jZXJ0cy9NaWNyb3Nv
 // SIG // ZnRUaW1lU3RhbXBQQ0EuY3J0MBMGA1UdJQQMMAoGCCsG
-// SIG // AQUFBwMIMA0GCSqGSIb3DQEBBQUAA4IBAQCJehwGFIbD
-// SIG // v+5TfA//GKMWAGxUw9KZZvNqxbNTH3/VgV9R8/z6Lqiv
-// SIG // 0Y0RH9q3RKNwAhBNsIT2njVXk4PeJqyb4884skOIK8vl
-// SIG // V0vWUmtcbTARAu+pUZbB4oK/Z6uaECCEFKny/OromIJS
-// SIG // dXwD3txRJK1umXshuqEqLPVjxAE01+WgDEnUCt1uAQux
-// SIG // L2lxU/GPEcPl2w0LfSyUhk1nF3nYKHrloO5UvDdy8ZqL
-// SIG // 1Hc4YFOvg2ScMl6+Vy6dpeZ78el6NHeRHnRMqsdL59xq
-// SIG // 4XlayVog0TOb5ffjo7l67nWYUo/ViOKrtyqsfoqBKRvR
-// SIG // cKkPD7NmpVq1jr1cvPdVvPkQMIIGBzCCA++gAwIBAgIK
+// SIG // AQUFBwMIMA0GCSqGSIb3DQEBBQUAA4IBAQAAGbFWyVTR
+// SIG // WVDTHF0cSnnpXNQ4IkBywutEopGvfDsAxV6JmGpJOsrx
+// SIG // PnydwyApw1CvZJn/N7GEzkOWO4d0M8B3D3coSzx0gQZr
+// SIG // j5JY+o3FhrrxyqVLj/T048igcNAj2dT0ztSXOUY7EGL8
+// SIG // artNfhuVL2aJZzOlsO0KZgaAxMs3uSfnYBsK1jISCg8y
+// SIG // i1fXaOkeaLmULy71e24x+dAF9rStp986WWLwJfy2sixx
+// SIG // TSDuwNg0NVc1mt59ssmL2pnml9TZEiwN9j6owF8pJpA3
+// SIG // x0OgxVbg1eJ6qzSPrNeBCYDEMvA81PV+/iiJAsyxTav2
+// SIG // 3Nlg6NearEIgAj1UimNSDhoiMIIGBzCCA++gAwIBAgIK
 // SIG // YRZoNAAAAAAAHDANBgkqhkiG9w0BAQUFADBfMRMwEQYK
 // SIG // CZImiZPyLGQBGRYDY29tMRkwFwYKCZImiZPyLGQBGRYJ
 // SIG // bWljcm9zb2Z0MS0wKwYDVQQDEyRNaWNyb3NvZnQgUm9v
@@ -316,34 +314,34 @@ module.exports = function (context) {
 // SIG // AhMzAAAAZEeElIbbQRk4AAAAAABkMAkGBSsOAwIaBQCg
 // SIG // gcIwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYK
 // SIG // KwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZI
-// SIG // hvcNAQkEMRYEFBctJBSejqdgFrOSIEAU/37I6wZnMGIG
+// SIG // hvcNAQkEMRYEFMW+NLppySv/DkUbhRHWiersJAVyMGIG
 // SIG // CisGAQQBgjcCAQwxVDBSoDSAMgBNAGkAYwByAG8AcwBv
 // SIG // AGYAdAAgAEMAbwByAHAAbwByAGEAdABpAG8AbgAgACgA
 // SIG // UgApoRqAGGh0dHA6Ly93d3cubWljcm9zb2Z0LmNvbTAN
-// SIG // BgkqhkiG9w0BAQEFAASCAQAHW3P3/kHWTYK7dQp+kYuM
-// SIG // plJNvKne4gqYI4Ifx+pt8VoRMP7YlbFkN0wYjleIcdbc
-// SIG // ehGLqmOmDgt9xJ6Az96hWP2GvQ1thLVf8rGsv2It53By
-// SIG // bRaKIJlo9cozQh8jx5M2gEA4Cdno2kgUiX+vp42HSnVG
-// SIG // DlRwWeLrCIEIZYQQFwFJelIBcgH87oOX33ozRyZfqH45
-// SIG // RFYtnwYazplQU3lf+PyKFv3C/QyxeA92gzOobQcl1rn4
-// SIG // uEGgHoPw5D3veG7tYr6KkC96TsaMMZF7GB7yypTPXqPP
-// SIG // AuqWF3Iah+n6vam0xEV8thVxwGy6kGTL9IBJqoW1KOFz
-// SIG // y1nss08xnuAaoYICKDCCAiQGCSqGSIb3DQEJBjGCAhUw
+// SIG // BgkqhkiG9w0BAQEFAASCAQBuFRsPIvEt2l9sbL6uGCjW
+// SIG // vhasJKz0eZpoy4MO1/QBYnIS+Nqs7tqQsbabikElSWf8
+// SIG // 5XMu/GfUnixA8zYjEWD5syomBiCDJ2oqTV8fDIQi9UIW
+// SIG // GLVM7HCkEnQ870DYg1z8x5mqIPbosn4lCQU82MB/cmzk
+// SIG // TLjk84pxbhw0OQrxXikmbIRTvL3aZgOEUI5wvRf/0c/6
+// SIG // Bmd2N8W+b8X0+D/gbQJDFipZ1hxNlCWxFZO5UFrvtRWW
+// SIG // rF30RMj0sv1yzLzTDGyvkvahlpW7A5NCN6qbeYKN9fOj
+// SIG // dKJMJ5DznDzVAYfnwwaT7jMrW162HF4Zwjz8aeUZKs4E
+// SIG // 05klZjCMgBC1oYICKDCCAiQGCSqGSIb3DQEJBjGCAhUw
 // SIG // ggIRAgEBMIGOMHcxCzAJBgNVBAYTAlVTMRMwEQYDVQQI
 // SIG // EwpXYXNoaW5ndG9uMRAwDgYDVQQHEwdSZWRtb25kMR4w
 // SIG // HAYDVQQKExVNaWNyb3NvZnQgQ29ycG9yYXRpb24xITAf
 // SIG // BgNVBAMTGE1pY3Jvc29mdCBUaW1lLVN0YW1wIFBDQQIT
-// SIG // MwAAAJqamxbCg9rVwgAAAAAAmjAJBgUrDgMCGgUAoF0w
+// SIG // MwAAAK7sP622i7kt0gAAAAAArjAJBgUrDgMCGgUAoF0w
 // SIG // GAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG
-// SIG // 9w0BCQUxDxcNMTYwOTIyMjEzMTA4WjAjBgkqhkiG9w0B
-// SIG // CQQxFgQUC6cYDYs1vwg+dwlGc9Xhbq0wnE4wDQYJKoZI
-// SIG // hvcNAQEFBQAEggEAiyKUdgf190c36FzAn8DQr46H4eZt
-// SIG // ofOYOGQ8al5s1X9qgxTkfhzgcCR6Tdt0B7tlBlKHkdh1
-// SIG // sSQz780jAEfyzupl/+dGuL7ZZGF2QeGZgzDkpgqocgoE
-// SIG // I7p4YbF27p2U/m3e180HMJ1rwCbPWgmR6dKCYl45iBlS
-// SIG // xfEspyJgv41wZD5DpR21pnBYukNNxqouBf50KNBNqqNG
-// SIG // uD+5bJpz5Bt3yk+XNpr9QJEtZgtdnPrUjDHrlLmf1U3h
-// SIG // Lp++JP7ecnLQY/iNhQ+1BKXpsDx7t0WSYeC2U8kS0tct
-// SIG // pHx5w4T02qd3WqCTO9zXPv/4sCAuY9eE1lkO2IoxVjKK
-// SIG // YeHOhw==
+// SIG // 9w0BCQUxDxcNMTYwOTIzMTkyNTU4WjAjBgkqhkiG9w0B
+// SIG // CQQxFgQU3mEilHqzM0sq2vQNeAw3XpLDIYowDQYJKoZI
+// SIG // hvcNAQEFBQAEggEAigMLHQJnfdm9Hzc37FT7lXa0PCl4
+// SIG // lBvMX82vq+4jX9So5N3sRgVkpyfDPDUcMFYhW2dyjSf6
+// SIG // uGGM0G67rHZIU5wTOi/A14dXsgG8ei5wo0QPWHwxkrW1
+// SIG // bTXThsHfns64RK+0uqQ1aivjxIRTLxSrmdxSXVLMcrt7
+// SIG // uvW7Vk1aCV67MLiyejUIDireil2cTJMH0FhKc4ZNh5Oc
+// SIG // 1dErnNJZ43KYD0C8TzMv6CH6wjsiZLskVLi1SYscFE9o
+// SIG // bhuT5SKz0H1HjZC3n12yPuwW/+3vQPaiLOYxJrRfNwyJ
+// SIG // EsgH5Y9qwaysgtk7PablFoUY3SdHSTEuuRyh88J2sQDV
+// SIG // oStYJg==
 // SIG // End signature block
