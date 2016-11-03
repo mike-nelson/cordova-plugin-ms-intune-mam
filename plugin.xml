@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-ms-intune-mam" version="1.1.2" xmlns="http://apache.org/cordova/ns/plugins/1.0">
+<plugin id="cordova-plugin-ms-intune-mam" version="1.2.0" xmlns="http://apache.org/cordova/ns/plugins/1.0">
     <name>Intune App SDK</name>
     <description>Microsoft Intune App SDK Cordova plugin</description>
     <author>Microsoft</author>
@@ -28,7 +28,7 @@
         <!-- According to bug filed at https://issues.apache.org/jira/browse/CB-10438?jql=text%20~%20%22plugin%20dependency%22, Cordova will currently grab the latest version of the plugin dependency rather than the specified version -->
         <dependency id="cordova-plugin-ms-adal"
                     url="https://github.com/AzureAD/azure-activedirectory-library-for-cordova"
-                    commit="8906ce687d3744ef8a3d98afdc2d5e388a95e4dd" />
+                    commit="82fbeeefbe106591354216257ae048f0c1ded89d" />
     </platform>
     <platform name="android">
         <hook type="after_compile" src="scripts/android/wraphook.js"/>
