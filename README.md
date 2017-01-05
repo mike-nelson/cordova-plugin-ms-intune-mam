@@ -1,4 +1,8 @@
-#Microsoft Intune App SDK Cordova Plugin
+# Microsoft Intune App SDK Cordova Plugin
+
+Version [1.2.0](https://github.com/msintuneappsdk/cordova-plugin-ms-intune-mam/releases) 
+
+See [release notes](https://github.com/msintuneappsdk/cordova-plugin-ms-intune-mam/releases) for more information.
 
 The Microsoft Intune App SDK Cordova Plugin enables data protection features and mobile app management via Microsoft Intune for Cordova-based apps on iOS and Android.
 
