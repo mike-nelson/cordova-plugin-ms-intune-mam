@@ -12,6 +12,20 @@
                 <param name="onload" value="true" />
             </feature>
         </config-file>
+        <config-file target="*-Debug.plist" parent="keychain-access-groups">
+            <array>
+                <string>$(AppIdentifierPrefix)com.microsoft.intune.mam</string>
+                <string>$(AppIdentifierPrefix)com.microsoft.adalcache</string>
+                <string>$(AppIdentifierPrefix)com.microsoft.workplacejoin</string>
+            </array>
+        </config-file>
+        <config-file target="*-Release.plist" parent="keychain-access-groups">
+            <array>
+                <string>$(AppIdentifierPrefix)com.microsoft.intune.mam</string>
+                <string>$(AppIdentifierPrefix)com.microsoft.adalcache</string>
+                <string>$(AppIdentifierPrefix)com.microsoft.workplacejoin</string>
+            </array>
+        </config-file>
         <hook type="before_prepare" src="scripts/ios/configuration.js"/>
         <resource-file src="lib/ios/IntuneMAMResources.bundle" />
         <source-file framework="true" src="lib/ios/libIntuneMAM.a" custom="true"/>
@@ -28,7 +42,7 @@
         <!-- According to bug filed at https://issues.apache.org/jira/browse/CB-10438?jql=text%20~%20%22plugin%20dependency%22, Cordova will currently grab the latest version of the plugin dependency rather than the specified version -->
         <dependency id="cordova-plugin-ms-adal"
                     url="https://github.com/AzureAD/azure-activedirectory-library-for-cordova"
-                    commit="82fbeeefbe106591354216257ae048f0c1ded89d" />
+                    commit="7230d45bb5d46e09348600930ca1274bc16212e2" />
     </platform>
     <platform name="android">
         <hook type="after_compile" src="scripts/android/wraphook.js"/>
