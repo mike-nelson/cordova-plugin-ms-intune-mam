@@ -1,6 +1,6 @@
 # Microsoft Intune App SDK Cordova Plugin
 
-Version [1.2.0](https://github.com/msintuneappsdk/cordova-plugin-ms-intune-mam/releases) 
+Version [1.2.1](https://github.com/msintuneappsdk/cordova-plugin-ms-intune-mam/releases) 
 
 See [release notes](https://github.com/msintuneappsdk/cordova-plugin-ms-intune-mam/releases) for more information.
 
