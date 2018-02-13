@@ -1,5 +1,4 @@
-
-> Intune is ending support for the Microsoft Intune App SDK Cordova Plugin on May 1, 2018. We recommend that you use the Intune App Wrapping Tool instead. For more information about the App Wrapping Tool, see [App Wrapping Tool for iOS](app-wrapper-prepare-ios.md) and [App Wrapping Tool for Android](app-wrapper-prepare-android.md). For more information about this change, see the [Notices](whats-new.md#notices) section of [What's new in Microsoft Intune](whats-new.md).
+> Intune is ending support for the Microsoft Intune App SDK Cordova Plugin on May 1, 2018. We recommend that you use the Intune App Wrapping Tool instead. For more information about the App Wrapping Tool, see [App Wrapping Tool for iOS](https://docs.microsoft.com/en-us/intune/app-wrapper-prepare-ios) and [App Wrapping Tool for Android](https://docs.microsoft.com/en-us/intune/app-wrapper-prepare-android). For more information about this change, see the [Notices](https://docs.microsoft.com/en-us/intune/whats-new#notices) section of [What's new in Microsoft Intune](https://docs.microsoft.com/en-us/intune/whats-new).
 
 # Microsoft Intune App SDK for Cordova plugin
 
